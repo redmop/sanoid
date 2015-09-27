@@ -312,6 +312,51 @@ sub getargs {
 		$args{'compressargs'} = '-3';
 		$args{'rawdecompresscmd'} = '/bin/zcat';
 		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'pigz') {
+		$args{'rawcompresscmd'} = '/usr/bin/pigz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/unpigz';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'bzip2') {
+		$args{'rawcompresscmd'} = '/bin/bzip2';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/bin/bunzip2';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'pbzip2') {
+		$args{'rawcompresscmd'} = '/usr/bin/pbzip2';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/pbzip2';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'lbzip2') {
+		$args{'rawcompresscmd'} = '/usr/bin/lbzip2';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/lbunzip2';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'lzip') {
+		$args{'rawcompresscmd'} = '/usr/bin/lzip';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/lzip';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'plzip') {
+		$args{'rawcompresscmd'} = '/usr/bin/plzip';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/plzip';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'xz') {
+		$args{'rawcompresscmd'} = '/usr/bin/xz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/unxz';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'pxz') {
+		$args{'rawcompresscmd'} = '/usr/bin/pxz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/pxz';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'pixz') {
+		$args{'rawcompresscmd'} = '/usr/bin/pixz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/pixz';
+		$args{'decompressargs'} = '-d';
 	} elsif ( ($args{'compress'} eq 'lzo') || ! (defined $args{'compress'}) ) {
 		$args{'rawcompresscmd'} = '/usr/bin/lzop';
 		$args{'compressargs'} = '';
