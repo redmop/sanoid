@@ -37,7 +37,7 @@ And its /etc/sanoid/sanoid.conf might look something like this:
 
 Which would be enough to tell sanoid to take and keep 36 hourly snapshots, 30 dailies, 3 monthlies, and no yearlies for all datasets under data/images (but not data/images itself, since process_children_only is set).  Except in the case of data/images/win7-spice, which follows the same template (since it's a child of data/images) but only keeps 4 hourlies for whatever reason.
 
-###### Sanoid Command Line Options
+##### Sanoid Command Line Options
 
 + --cron
 
@@ -103,7 +103,7 @@ Which would pull-replicate the filesystem from the remote host to the local syst
 
 Syncoid supports recursive replication (replication of a dataset and all its child datasets) and uses mbuffer buffering, lzop compression, and pv progress bars if the utilities are available on the systems used.
 
-###### Syncoid Command Line Options
+##### Syncoid Command Line Options
 
 + --[source]
 
