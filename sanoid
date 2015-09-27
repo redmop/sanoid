@@ -300,10 +300,10 @@ sub take_snapshots {
 					push @preferredtime,0; # try to hit 0 seconds
 					push @preferredtime,$config{$section}{'weekly_min'};
 					push @preferredtime,$config{$section}{'weekly_hour'};
-					push @preferredtime,$config{$section}{'weekly_wday'};
 					push @preferredtime,$datestamp{'mday'};
 					push @preferredtime,($datestamp{'mon'}-1); # january is month 0
 					push @preferredtime,$datestamp{'year'};
+					push @preferredtime,$config{$section}{'weekly_wday'};
 					$lastpreferred = timelocal(@preferredtime);
 					if ($lastpreferred > time()) { $lastpreferred -= 60*60*24*7; } # preferred time is later this week - so look at last week's
 				} elsif ($type eq 'monthly') { 
@@ -1112,4 +1112,3 @@ sub getchilddatasets {
 
 	return @children;
 }
-
