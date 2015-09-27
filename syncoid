@@ -546,13 +546,13 @@ sub buildsynccmd {
 			$bwlimit = $args{'source-bwlimit'}; 
 		}
 		if ($avail{'sourcembuffer'}) { $synccmd .= " $mbuffercmd $bwlimit $mbufferoptions |"; }
-		if ($avail{'localpv'}) { $synccmd .= " $pvcmd -s $pvsize |"; }
+		if ($avail{'localpv'}) { $synccmd .= " $pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize |"; }
 		$synccmd .= " $recvcmd";
 	} elsif ($sourcehost eq '') {
 		# local source, remote target.
 		#$synccmd = "$sendcmd | $pvcmd | $args{'compresscmd'} | $mbuffercmd | $sshcmd $targethost '$args{'decompresscmd'} | $mbuffercmd | $recvcmd'";
 		$synccmd = "$sendcmd |";
-		if ($avail{'localpv'}) { $synccmd .= " $pvcmd -s $pvsize |"; }
+		if ($avail{'localpv'}) { $synccmd .= " $pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize |"; }
 		if ($avail{'compress'}) { $synccmd .= " $args{'compresscmd'} |"; }
 		if ($avail{'sourcembuffer'}) { $synccmd .= " $mbuffercmd $args{'source-bwlimit'} $mbufferoptions |"; }
 		$synccmd .= " $sshcmd $targethost '";
@@ -568,7 +568,7 @@ sub buildsynccmd {
 		$synccmd .= "' | ";
 		if ($avail{'targetmbuffer'}) { $synccmd .= "$mbuffercmd $args{'target-bwlimit'} $mbufferoptions | "; }
 		if ($avail{'compress'}) { $synccmd .= "$args{'decompresscmd'} | "; }
-		if ($avail{'localpv'}) { $synccmd .= "$pvcmd -s $pvsize | "; }
+		if ($avail{'localpv'}) { $synccmd .= "$pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize | "; }
 		$synccmd .= "$recvcmd";
 	} else {
 		#remote source, remote target... weird, but whatever, I'm not here to judge you.
@@ -578,7 +578,7 @@ sub buildsynccmd {
 		if ($avail{'sourcembuffer'}) { $synccmd .= " | $mbuffercmd $args{'source-bwlimit'} $mbufferoptions"; }
 		$synccmd .= "' | ";
 		if ($avail{'compress'}) { $synccmd .= "$args{'decompresscmd'} | "; }
-		if ($avail{'localpv'}) { $synccmd .= "$pvcmd -s $pvsize | "; }
+		if ($avail{'localpv'}) { $synccmd .= "$pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize | "; }
 		if ($avail{'compress'}) { $synccmd .= "$args{'compresscmd'} | "; }
 		if ($avail{'localmbuffer'}) { $synccmd .= "$mbuffercmd $mbufferoptions | "; }
 		$synccmd .= "$sshcmd $targethost '";
