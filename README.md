@@ -3,6 +3,8 @@
 
 # Sanoid
 
+# Note that the snapshots it takes are not atomic!
+
 Sanoid is a policy-driven snapshot management tool for ZFS filesystems.  When combined with the Linux KVM hypervisor, you can use it to make your systems <a href="http://openoid.net/transcend" target="_blank">functionally immortal</a>.
 
 More prosaically, you can use Sanoid to create, automatically thin, and monitor snapshots and pool health from a single eminently human-readable TOML config file at /etc/sanoid/sanoid.conf.  (Sanoid also requires a "defaults" file located at /etc/sanoid/sanoid.defaults.conf, which is not user-editable.)  A typical Sanoid system would have a single cron job:
@@ -80,6 +82,8 @@ Which would be enough to tell sanoid to take and keep 36 hourly snapshots, 30 da
 ----------
 
 # Syncoid
+
+# Note that the snapshots it takes and transfers are not atomic!
 
 Sanoid also includes a replication tool, syncoid, which facilitates the asynchronous incremental replication of ZFS filesystems.  A typical syncoid command might look like this:
 
