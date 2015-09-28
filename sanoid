@@ -44,8 +44,11 @@ if ($args{'force-update'}) 	{ my $snaps = getsnaps( \%config, $cacheTTL, 1 ); }
 if ($args{'version'}) 		{ print "INFO: Sanoid version: $version\n"; }
 
 if ($args{'cron'} || $args{'noargs'}) {
-	if ($args{'noargs'}) { print "INFO: No arguments given - assuming --cron and --verbose.\n"; }
+	if ($args{'noargs'}) {
+		print "INFO: No arguments given - assuming --cron and --verbose.\n"; 
 	$args{'verbose'} = 1;
+	}
+	
 	take_snapshots (@params);
 	prune_snapshots (@params);
 } else {
