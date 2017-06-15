@@ -384,6 +384,51 @@ sub getargs {
 		$args{'compressargs'} = '-3';
 		$args{'rawdecompresscmd'} = '/bin/zcat';
 		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'pigz') {
+		$args{'rawcompresscmd'} = '/usr/bin/pigz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/unpigz';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'bzip2') {
+		$args{'rawcompresscmd'} = '/bin/bzip2';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/bin/bunzip2';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'pbzip2') {
+		$args{'rawcompresscmd'} = '/usr/bin/pbzip2';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/pbzip2';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'lbzip2') {
+		$args{'rawcompresscmd'} = '/usr/bin/lbzip2';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/lbunzip2';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'lzip') {
+		$args{'rawcompresscmd'} = '/usr/bin/lzip';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/lzip';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'plzip') {
+		$args{'rawcompresscmd'} = '/usr/bin/plzip';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/plzip';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'xz') {
+		$args{'rawcompresscmd'} = '/usr/bin/xz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/unxz';
+		$args{'decompressargs'} = '';
+	} elsif ($args{'compress'} eq 'pxz') {
+		$args{'rawcompresscmd'} = '/usr/bin/pxz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/pxz';
+		$args{'decompressargs'} = '-d';
+	} elsif ($args{'compress'} eq 'pixz') {
+		$args{'rawcompresscmd'} = '/usr/bin/pixz';
+		$args{'compressargs'} = '-3';
+		$args{'rawdecompresscmd'} = '/usr/bin/pixz';
+		$args{'decompressargs'} = '-d';
 	} elsif ( ($args{'compress'} eq 'lzo') || ($args{'compress'} eq 'default') ) {
 		$args{'rawcompresscmd'} = '/usr/bin/lzop';
 		$args{'compressargs'} = '';
@@ -642,13 +687,14 @@ sub buildsynccmd {
 		}
 
 		if ($avail{'sourcembuffer'}) { $synccmd .= " $mbuffercmd $bwlimit $mbufferoptions |"; }
-		if ($avail{'localpv'} && !$quiet) { $synccmd .= " $pvcmd -s $pvsize |"; }
+		if ($avail{'localpv'} && !$quiet) { $synccmd .= " $pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize |"; }
 		$synccmd .= " $recvcmd";
 	} elsif ($sourcehost eq '') {
 		# local source, remote target.
 		#$synccmd = "$sendcmd | $pvcmd | $args{'compresscmd'} | $mbuffercmd | $sshcmd $targethost '$args{'decompresscmd'} | $mbuffercmd | $recvcmd'";
 		$synccmd = "$sendcmd |";
-		if ($avail{'localpv'} && !$quiet) { $synccmd .= " $pvcmd -s $pvsize |"; }
+
+		if ($avail{'localpv'} && !$quiet) { $synccmd .= " $pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize |"; }
 		if ($avail{'compress'}) { $synccmd .= " $args{'compresscmd'} |"; }
 		if ($avail{'sourcembuffer'}) { $synccmd .= " $mbuffercmd $args{'source-bwlimit'} $mbufferoptions |"; }
 		$synccmd .= " $sshcmd $targethost '";
@@ -664,7 +710,7 @@ sub buildsynccmd {
 		$synccmd .= "' | ";
 		if ($avail{'targetmbuffer'}) { $synccmd .= "$mbuffercmd $args{'target-bwlimit'} $mbufferoptions | "; }
 		if ($avail{'compress'}) { $synccmd .= "$args{'decompresscmd'} | "; }
-		if ($avail{'localpv'} && !$quiet) { $synccmd .= "$pvcmd -s $pvsize | "; }
+		if ($avail{'localpv'} && !$quiet) { $synccmd .= "$pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize | "; }
 		$synccmd .= "$recvcmd";
 	} else {
 		#remote source, remote target... weird, but whatever, I'm not here to judge you.
@@ -674,7 +720,7 @@ sub buildsynccmd {
 		if ($avail{'sourcembuffer'}) { $synccmd .= " | $mbuffercmd $args{'source-bwlimit'} $mbufferoptions"; }
 		$synccmd .= "' | ";
 		if ($avail{'compress'}) { $synccmd .= "$args{'decompresscmd'} | "; }
-		if ($avail{'localpv'} && !$quiet) { $synccmd .= "$pvcmd -s $pvsize | "; }
+		if ($avail{'localpv'} && !$quiet) { $synccmd .= "$pvcmd --progress --timer --eta --rate --bytes --average-rate --size $pvsize | "; }
 		if ($avail{'compress'}) { $synccmd .= "$args{'compresscmd'} | "; }
 		if ($avail{'localmbuffer'}) { $synccmd .= "$mbuffercmd $mbufferoptions | "; }
 		$synccmd .= "$sshcmd $targethost '";
