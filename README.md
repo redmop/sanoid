@@ -78,7 +78,6 @@ Which would be enough to tell sanoid to take and keep 36 hourly snapshots, 30 da
 	This prints out quite alot of additional information during a sanoid run, and is normally not needed.
 
 
-
 ----------
 
 # Syncoid
@@ -153,3 +152,13 @@ Syncoid supports recursive replication (replication of a dataset and all its chi
 
 	This doesn't do anything right now.
 
++ --no-stream
+
+	This argument tells syncoid to use -i incrementals, not -I. This updates the target with the newest snapshot from the source, without replicating the intermediate snapshots in between. (If used for an initial synchronization, will do a full replication from newest snapshot and exit immediately, rather than starting with the oldest and then doing an immediate -i to the newest.)
+
++ --no-sync-snap
+
+	This argument tells syncoid to restrict itself to existing snapshots, instead of creating a semi-ephemeral syncoid snapshot at execution time. Especially useful in multi-target (A->B, A->C) replication schemes, where you might otherwise accumulate a large number of foreign syncoid snapshots.
+
++ --sshport
+	Allow sync to/from boxes running SSH on non-standard ports
