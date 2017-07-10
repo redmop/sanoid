@@ -1,0 +1,112 @@
+First a little background:-
+
+Moved from Vmware ESX5 to Proxmox ver 2.x as a virtualisation platform some years ago as I became increasingly frustrated with ESX's opacity, lack of useful Linux tools and requirement for a proprietary host gui. Proxmox's web interface allows those less experienced a friendly, somewhat intuitive browser based interface to the hypervisor with all the benefits of the Debian toolset under the hood. Win win. Unfortunately the Proxmox developers haven't fully utilised the many benefits that the zfs filesystem brings to the eco system. Jim Salters Sanoid/Syncoid fills that gap.
+
+I'd like to think of myself as an OS agnostic sysadmin always looking for the best tool for the job. In this case my job largely involves running Windows systems on a Proxmox hypervisors backed up to Freenas boxes using Shadow Protect and rsync. When zfs became available on Proxmox ver 3.4 (I think) I didn't think much of it but over time the benefits became clear. ZFS is complex and its taken me a while to come to grips with its capability but I can't imagine running a server without it. Period.
+
+Whilst looking to extend zfs functionality with zfs send/recv I stumbled across Sanoid/Syncoid (was using zfsnap for snashotting until this point) suddenly all the complexity of sending zfs datasets to other machines disappeared! Yes I tried scripting the process. Yes that failed miserably.
+
+Via Jim's excellent video presentations I came to realise that having data backup was one thing but if that backup could be utilised as a hot spare then that is a game changer! Jim does things a little differently in terms of hypervisor but none the less the same rules apply. So my quest to replace Freenas as backup storage with Proxmox as not only backup storage but as a hot spare with the ability to be brought online in minutes began. This long winded article is my way of thanking those involved and giving back to the community as well as a way of documenting the process for those that follow.
+
+This how I did it:-
+
+2 Proxmox 4.x servers configured with zfs at install, in this case hosts vh11 (Production) and vh25 (HotSpare).  Both configured with Sanoid/Syncoid. I prefer mirrored disks sometimes striped for capacity/performance but not necessary for this discussion. All done as root with ssh configured for password less login.
+
+In this case the Windows server on vh11 that I want available as a hot spare on vh25 is described by zfs on proxmox as "rpool/vms/vm-161-disk-1". The destination for the hot swap will be "storage/vm-601-disk-1". Note the different datasets. For simplicity it may be wise to maintain the same datasets on both machines but its not necessary.
+
+# Create a dataset to store the virtual machine configuration typically stored as /etc/pve/qemu-server/601.conf in this case
+# Proxmox doesn't set compression unless specified. Hardly necessary in this here but good practice none the less.
+zfs create -o compression=on rpool/hostconf
+
+# Rsync the vm config file to the new dataset.
+rsync /etc/pve/qemu-server/601.conf /rpool/hostconf
+# Confirm
+ls /rpool/hostconf/
+> 601.conf
+
+Install Sanoid / Syncoid and prerequisites on both machines:-
+apt install libconfig-inifiles-perl git pv lzop mbuffer
+
+# Clone the git repo
+cd /opt
+git clone https://github.com/jimsalterjrs/sanoid
+
+# Link the executables
+ln /opt/sanoid/sanoid /usr/sbin/
+ln /opt/sanoid/syncoid /usr/sbin/
+
+# Set up the configuration files (only required on vh11 for the purpose of this excersize)
+mkdir -p /etc/sanoid
+cp /opt/sanoid/sanoid.conf /etc/sanoid/sanoid.conf
+cp /opt/sanoid/sanoid.defaults.conf /etc/sanoid/sanoid.defaults.conf
+
+# Edit sanoid.conf (I use nano) on vh11
+nano -c /etc/sanoid/sanoid.conf
+# Remove the section describing the datasets and templates lines 6-28 and replace with the dataset / zvol to be replicated eg
+# The virtualised machine
+[rpool/vms/vm-161-disk-1]
+  use_template = production
+# The virtualised machine conf file
+  [rpool/hostconf]
+  use_template = production
+
+# now run sanoid
+sanoid
+# Example output
+>INFO: No arguments given - assuming --cron and --verbose.
+>INFO: taking snapshots...
+>taking snapshot rpool/vms/vm-161-disk-1@autosnap_2017-07-09_11:16:13_hourly
+>taking snapshot rpool/hostconf@autosnap_2017-07-09_11:16:13_hourly
+>INFO: cache expired - updating from zfs list.
+>INFO: pruning snapshots...
+
+# Confirm snaps
+zfs list -t snap
+
+# Replicate the hostconf and vm disk to the HotSpare
+# From vh11 (Production) use syncoid to replicate from vh11 to vh25
+syncoid rpool/hostconf root@vh25:rpool/hostconf
+# and
+syncoid rpool/vms/vm-601-disk-1 root@vh25:storage/vm-601-disk-1
+# Output will contain INFO relating to the transfer
+
+# Shutdown the vm on vh11
+qm stop 601
+# Or use the web Gui or vm console
+
+Login to vh25 the HotSpare
+ssh root@vh25
+# cofirm the dataset have trasnsfered
+zfs list
+.NAME USED AVAIL REFER MOUNTPOINT
+>rpool/hostconf 132K 61.4G 100K /rpool/hostconf
+>storage/vm-601-disk-1 9.41G 1.59T 9.28G -
+# Note the disk has no mountpoint. I believe this is because it is a zvol instead of a dataset.
+# I was a little confused at first but it caused no problems
+
+# Copy the vm conf file to the correct location
+cp /rpool/hostconf/601.conf /etc/pve/qemu-server
+# The machine will now appear in the Proxmox gui and if datasets are the same on most machine
+# should start with the Start button from the gui.
+# In this case the start failed with the error
+>TASK ERROR: storage 'vmsz' does not exists
+# This is because vmsz was the dataset on vh11
+# The disk file was sent to the storage dataset on vh25
+# Easily rectifed by editing the conf file
+nano /etc/pve/qemu-server/601.conf
+# And replacing the Proxmox storage description
+# Change
+virtio0: vmsz:vm-601-disk-1,size=50G
+# To
+virtio0: storage:vm-601-disk-1,size=50G
+
+# Click the start button for the vm in the gui or from the cli
+qm start 601
+
+That's it! machine id 601, in this case a Windows 2012R2 server is now running on the HotSpare vh25
+Not including the data transfer the whole process took less than 10 mins. I can't think of a faster, more simple and reliable way to bring a Proxmox vm back on line is this type of scenario.
+
+My thanks go to, in no particular order:-
+Open ZFS developers, ZFS on Linux developers, Proxmox developers, Linus Torvalds, Allan Jude, Jim Salter aka mercenary_sysadmin and the encouragement I received here.
+
+Source: https://pastebin.com/raw/fJXmcALL
