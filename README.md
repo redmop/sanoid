@@ -9,7 +9,7 @@ More prosaically, you can use Sanoid to create, automatically thin, and monitor 
 * * * * * TZ=UTC /usr/local/bin/sanoid --cron
 ```
 
-**`IMPORTANT NOTE`**: using a local timezone will result in a single hourly snapshot to be **skipped** during `daylight->nodaylight` transition. To avoid that, using UTC as timezone is recommend whenever possible.
+`Note`: Using UTC as timezone is recommend to prevent problems with daylight saving times
 
 And its /etc/sanoid/sanoid.conf might look something like this:
 
@@ -48,6 +48,14 @@ Which would be enough to tell sanoid to take and keep 36 hourly snapshots, 30 da
 + --configdir
 
 	Specify a location for the config file named sanoid.conf. Defaults to /etc/sanoid
+
++ --cache-dir
+
+	Specify a directory to store the zfs snapshot cache. Defaults to /var/cache/sanoid
+
++ --run-dir
+
+	Specify a directory for temporary files such as lock files. Defaults to /var/run/sanoid
 
 + --take-snapshots
 
